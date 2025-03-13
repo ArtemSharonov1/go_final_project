@@ -27,20 +27,23 @@ func main() {
 	}()
 
 	http.HandleFunc("/api/nextdate", handler.NextDateHandler)
+
+	// Обработчик для работы с задачами
 	http.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			task.GetTaskHandler(database.DB)(w, r)
+			task.GetTaskHandler(database.DB)(w, r) // Получение задачи
 		case http.MethodPost:
-			task.AddTaskHandler(database.DB)(w, r)
+			task.AddTaskHandler(database.DB)(w, r) // Добавление новой задачи
 		case http.MethodPut:
-			task.UpdateTaskHandler(database.DB)(w, r)
+			task.UpdateTaskHandler(database.DB)(w, r) // Обновление существующей задачи
 		case http.MethodDelete:
-			task.DeleteTaskHandler(database.DB)(w, r)
+			task.DeleteTaskHandler(database.DB)(w, r) // Удаление задачи
 		default:
 			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		}
 	})
+	// Обработчик для изменения статуса задачи (выполнено/не выполнено)
 	http.HandleFunc("/api/task/done", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -51,9 +54,11 @@ func main() {
 			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		}
 	})
-	http.HandleFunc("/api/tasks", taskHandler.TasksHandler) // Новый маршрут для получения задач
+	// Обработчик для получения списка задач
+	http.HandleFunc("/api/tasks", taskHandler.TasksHandler)
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
 
+	// Запуск HTTP-сервера
 	fmt.Printf("Запускаем сервер на http://localhost:%s\n", defaultPort)
 	err = http.ListenAndServe(":"+defaultPort, nil)
 	if err != nil {

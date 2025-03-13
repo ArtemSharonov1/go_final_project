@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-// everyDay обрабатывает правило d <число>
+// everyDay обрабатывает правило d
 func everyDay(now, date time.Time, daysStr string) (string, error) {
 	d, err := strconv.Atoi(daysStr)
 	if err != nil || d > 400 || d <= 0 {
 		return "", fmt.Errorf("неверное правило повторения в d")
 	}
 
-	// Первое прибавление дней
+	// Прибавляем день
 	date = date.AddDate(0, 0, d)
 
 	// Проверяем, если дата всё ещё не в будущем
@@ -23,7 +23,7 @@ func everyDay(now, date time.Time, daysStr string) (string, error) {
 		date = date.AddDate(0, 0, d)
 	}
 
-	// Корректируем 29 февраля
+	// Корректировка 29 февраля
 	if date.Month() == time.February && date.Day() == 29 && !isLeapYear(date.Year()) {
 		date = time.Date(date.Year(), time.March, 1, 0, 0, 0, 0, time.Local)
 	}
@@ -31,11 +31,12 @@ func everyDay(now, date time.Time, daysStr string) (string, error) {
 	return date.Format("20060102"), nil
 }
 
-// everyWeek обрабатывает правило w <день недели,...>
+// everyWeek обрабатывает правило w
 func everyWeek(now, date time.Time, daysStr string) (string, error) {
 	days := strings.Split(daysStr, ",")
 	validDays := make(map[int]bool)
 
+	// Преобразуем значения дней недели в числа и проверяем корректность
 	for _, day := range days {
 		d, err := strconv.Atoi(day)
 		if err != nil || d < 1 || d > 7 {
@@ -44,11 +45,12 @@ func everyWeek(now, date time.Time, daysStr string) (string, error) {
 		validDays[d] = true
 	}
 
+	// Начинаем проверку с завтрашнего дня
 	date = date.AddDate(0, 0, 1) // Проверяем начиная с завтрашнего дня
 	for {
 		weekDay := int(date.Weekday())
 		if weekDay == 0 {
-			weekDay = 7
+			weekDay = 7 // Обработка воскресенья (0) к 7
 		}
 
 		if validDays[weekDay] && date.After(now) {
@@ -58,11 +60,12 @@ func everyWeek(now, date time.Time, daysStr string) (string, error) {
 	}
 }
 
-// everyMonth обрабатывает правило m <день,...>
+// everyMonth обрабатывает правило m
 func everyMonth(now, date time.Time, daysStr string) (string, error) {
 	days := strings.Split(daysStr, ",")
 	validDays := []int{}
 
+	// Преобразуем значения в числа и проверяем их корректность
 	for _, day := range days {
 		d, err := strconv.Atoi(day)
 		if err != nil || d < -31 || d > 31 || d == 0 {
@@ -72,12 +75,13 @@ func everyMonth(now, date time.Time, daysStr string) (string, error) {
 	}
 
 	for {
+		// Определяем последний день месяца
 		for _, day := range validDays {
 			newDate := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, time.Local)
 			lastDay := newDate.AddDate(0, 1, -1).Day()
 
 			if day < 0 {
-				day = lastDay + day + 1 // Отрицательные дни
+				day = lastDay + day + 1
 			}
 
 			if day > lastDay {
@@ -89,11 +93,11 @@ func everyMonth(now, date time.Time, daysStr string) (string, error) {
 				return newDate.Format("20060102"), nil
 			}
 		}
-		date = date.AddDate(0, 1, 0)
+		date = date.AddDate(0, 1, 0) // Переход к следующему месяцу
 	}
 }
 
-// everyYear обрабатывает правило y (исправлена обработка 29 февраля)
+// everyYear обрабатывает правило y
 func everyYear(now, date time.Time, _ string) (string, error) {
 	// Добавляем ровно 1 год
 	date = date.AddDate(1, 0, 0)
@@ -123,6 +127,7 @@ func isLeapYear(year int) bool {
 
 // NextDate вычисляет следующую дату выполнения задачи
 func NextDate(now time.Time, dateStr string, repeat string) (string, error) {
+	// Парсим входную дату
 	date, err := time.Parse("20060102", dateStr)
 	if err != nil {
 		return "", errors.New("неверный формат даты")
@@ -132,6 +137,7 @@ func NextDate(now time.Time, dateStr string, repeat string) (string, error) {
 		return "", errors.New("отсутствует правило повторения")
 	}
 
+	// Определяем тип правила повторения и вызываем соответствующую функцию
 	switch {
 	case repeat == "y":
 		return everyYear(now, date, "")

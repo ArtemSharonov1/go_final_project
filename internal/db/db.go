@@ -19,7 +19,6 @@ type DB struct {
 func NewDB() (*DB, error) {
 	// Получаем путь к исполняемому файлу
 	dbFile, err := os.Executable()
-	//fmt.Println(appPath)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении пути к приложению: %v", err)
 	}
@@ -80,7 +79,7 @@ func createTableAndIndex(db *sql.DB) error {
 	return err
 }
 
-// Task представляет собой структуру задачи
+// структура задачи
 type Task struct {
 	ID      int
 	Date    string

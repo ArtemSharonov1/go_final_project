@@ -14,14 +14,14 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	dateStr := r.FormValue("date")
 	repeat := r.FormValue("repeat")
 
-	// Проверка на пустые значения
+	// Проверяем на пустые значения
 	if nowStr == "" || dateStr == "" || repeat == "" {
 		fmt.Println("необходимо указать все параметры: now, date, repeat", http.StatusBadRequest)
 		http.Error(w, "необходимо указать все параметры: now, date, repeat", http.StatusBadRequest)
 		return
 	}
 
-	// Парсинг текущей даты
+	// Парсим дату
 	now, err := time.Parse("20060102", nowStr)
 	if err != nil {
 		log.Printf("Ошибка парсинга текущей даты: %v", err)
@@ -29,7 +29,7 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Вызов функции NextDate
+	// Вызываем функцию NextDate
 	nextDate, err := nextdate.NextDate(now, dateStr, repeat)
 	if err != nil {
 		log.Printf("Ошибка в NextDate: %v", err)
@@ -37,6 +37,6 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Возврат результата
+	// Возвращаем результата
 	fmt.Fprint(w, nextDate)
 }

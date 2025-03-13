@@ -18,7 +18,7 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-// TaskRequest представляет структуру запроса на добавление задачи
+// TaskRequest структура запроса на добавление или обновление задачи
 type TaskRequest struct {
 	ID      string `json:"id"`
 	Date    string `json:"date"`
@@ -27,13 +27,13 @@ type TaskRequest struct {
 	Repeat  string `json:"repeat"`
 }
 
-// TaskResponse представляет структуру ответа на добавление задачи
+// TaskResponse структура для ответа с ID созданной задачи или ошибкой
 type TaskResponse struct {
 	ID    int64  `json:"id,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
-// AddTaskHandler обрабатывает POST-запросы на добавление задачи
+// Обработка на добавление задачи
 func AddTaskHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -79,6 +79,7 @@ func AddTaskHandler(db *sql.DB) http.HandlerFunc {
 			dateStr = now.Format("20060102")
 		}
 
+		// Вставляем задачу в базу данных
 		query := `INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`
 		res, err := db.Exec(query, dateStr, req.Title, req.Comment, req.Repeat)
 		if err != nil {
@@ -86,6 +87,7 @@ func AddTaskHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		// Получаем ID созданной задачи
 		id, err := res.LastInsertId()
 		if err != nil {
 			sendErrorResponse(w, fmt.Sprintf("Ошибка при получении ID задачи: %v", err))
@@ -96,6 +98,7 @@ func AddTaskHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Обработчик получения задачи по ID
 func GetTaskHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
@@ -128,6 +131,7 @@ func GetTaskHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Обработчик обновления задачи
 func UpdateTaskHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req TaskRequest
@@ -196,6 +200,7 @@ func UpdateTaskHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Обработчик удаления задачи по ID
 func DeleteTaskHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
@@ -229,6 +234,7 @@ func DeleteTaskHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Обработчик завершения задачи
 func PostTaskDoneHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
@@ -279,6 +285,7 @@ func PostTaskDoneHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Обработчик удаления задачи по ID
 func DeleteTaskDoneHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
