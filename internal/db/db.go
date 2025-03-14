@@ -20,7 +20,7 @@ func NewDB() (*DB, error) {
 	// Получаем путь к исполняемому файлу
 	dbFile, err := os.Executable()
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при получении пути к приложению: %v", err)
+		return nil, fmt.Errorf("ошибка при получении пути к приложению: %w", err)
 	}
 
 	// Определяем путь к файлу базы данных
